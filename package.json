@@ -1,14 +1,21 @@
 {
+  "type": "module",
   "name": "my-project",
   "version": "1.0.0",
   "description": "",
-  "main": "my-script.js",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon src/index.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "sennir",
   "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-google": "^0.14.0",
+    "nodemon":"^3.0.3"
+  },
   "dependencies": {
     "express": "^4.18.2"
   }
