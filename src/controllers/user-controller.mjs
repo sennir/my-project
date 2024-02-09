@@ -1,107 +1,100 @@
-const users = [
-    {
-      id: 1,
-      username: "johndoe",
-      password: "password1",
-      email: "johndoe@example.com",
-    },
-    {
-      id: 2,
-      username: "janedoe",
-      password: "password2",
-      email: "janedoe@example.com",
-    },
-    {
-      id: 3,
-      username: "bobsmith",
-      password: "password3",
-      email: "bobsmith@example.com",
-    },
-  ];
+import {
+  deleteUserById,
+  insertUser,
+  listAllUsers,
+  selectUserById,
+  updateUserById,
+} from '../models/user-model.mjs';
 
-  const getUsers = (req, res) => {
-    res.json(users);
-  };
+// TODO: implement route handlers below for users (real data)
 
-  const getUserById = (req, res) => {
-    const userId = parseInt(req.params.id);
-    const userFound = users.find((user) => user.id === userId);
+//retrieves all users from the database
+const getUsers = async (req, res) => {
+  const result = await listAllUsers();
+  if (result.error) {
+    return res.status(result.error).json(result);
+  }
+  return res.json(result);
+};
 
-    if (userFound) {
-      res.json(userFound);
-    } else {
-      res.status(404).json({ error: "User not found" });
+//retrieves a user by their ID from the database
+const getUserById = async (req, res) => {
+  const result = await selectUserById(req.params.id);
+  if (result.error) {
+    return res.status(result.error).json(result);
+  }
+  return res.json(result);
+};
+
+//creates a new user in the database
+const postUser = async (req, res) => {
+  const {username, password, email} = req.body;
+  // check that all needed fields are included in request
+  if (username && password && email) {
+    const result = await insertUser(req.body);
+    if (result.error) {
+      return res.status(result.error).json(result);
     }
-  };
+    return res.status(201).json(result);
+  } else {
+    return res.status(400).json({error: 400, message: 'bad request'});
+  }
+};
 
-  const postUser = (req, res) => {
-    const newUser = req.body;
-    // Validate user input
-    if (!newUser.username || !newUser.password || !newUser.email) {
-      return res.status(400).json({ error: "Invalid user data" });
+//updates an existing user in the database
+const putUser = async (req, res) => {
+  const user_id = req.params.id;
+  const {username, password, email} = req.body;
+  // check that all needed fields are included in request
+  if (user_id && username && password && email) {
+    const result = await updateUserById({user_id, ...req.body});
+    if (result.error) {
+      return res.status(result.error).json(result);
     }
+    return res.status(201).json(result);
+  } else {
+    return res.status(400).json({error: 400, message: 'bad request'});
+  }
+};
 
-    // Check if the username is already taken
-    if (users.some((user) => user.username === newUser.username)) {
-      return res.status(409).json({ error: "Username already taken" });
-    }
+//deletes a user from the database
+const deleteUser = async (req, res) => {
+  const result = await deleteUserById(req.params.id);
+  if (result.error) {
+    return res.status(result.error).json(result);
+  }
+  return res.json(result);
+};
 
-    // Assign a new ID and add the user to the array
-    const newUserId = users.length + 1;
-    const user = { id: newUserId, ...newUser };
-    users.push(user);
+// Dummy login with mock data, returns user object if username & password match
+//handles user authentication
+const postLogin = async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username or password is missing' });
+  }
 
-    res.status(201).json({ message: "User created successfully", user });
-  };
-
-  const putUser = (req, res) => {
-    const userId = parseInt(req.params.id);
-    const index = users.findIndex((user) => user.id === userId);
-
-    if (index === -1) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const updatedUser = req.body;
-
-    // Validate user input
-    if (!updatedUser.username || !updatedUser.password || !updatedUser.email) {
-      return res.status(400).json({ error: "Invalid user data" });
-    }
-
-    // Check if the new username is already taken
-    if (
-      users.some(
-        (user) =>
-          user.username === updatedUser.username && user.id !== userId
-      )
-    ) {
-      return res.status(409).json({ error: "Username already taken" });
-    }
-
-    // Update the user data
-    users[index] = { id: userId, ...updatedUser };
-
-    res.json({ message: "User updated successfully", user: users[index] });
-  };
-
-  const postLogin = (req, res) => {
-    const userCreds = req.body;
-    if (!userCreds.username || !userCreds.password) {
-      return res.sendStatus(400);
+  try {
+    // Retrieve user from the database by username
+    const user = await findUserByUsername(username);
+    if (!user) {
+      return res.status(403).json({ error: 'Invalid username or password' });
     }
 
-    const userFound = users.find(
-      (user) =>
-        user.username === userCreds.username &&
-        user.password === userCreds.password
-    );
-
-    if (userFound) {
-      res.json({ message: "Logged in successfully", user: userFound });
-    } else {
-      res.status(403).json({ error: "Username/password invalid" });
+    // Compare passwords using bcrypt
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(403).json({ error: 'Invalid username or password' });
     }
-  };
 
-  export { getUsers, getUserById, postUser, putUser, postLogin };
+    // Passwords match, generate and return a token or session
+    // You would typically use a library like jsonwebtoken to generate tokens
+    // Here, we'll just return a success message and user information
+    return res.json({ message: 'Logged in successfully', user });
+  } catch (error) {
+    console.error('Error during login:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export {getUsers, getUserById, postUser, putUser, postLogin, deleteUser};
