@@ -1,5 +1,4 @@
 import promisePool from '../utils/database.mjs';
-
 const listAllUsers = async () => {
   try {
     const sql = 'SELECT user_id, username, user_level FROM Users';
