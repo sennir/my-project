@@ -9,11 +9,6 @@ import {
 
 const userRouter = express.Router();
 
-// Users resource
-// list users
-// ohjaa tietystä osoitteesta toiseen paikkaan
-// router ohjaa requestin toiselle reitille
-
 //user endpoint
 userRouter.route('/')
     //list users
