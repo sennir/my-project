@@ -4,7 +4,7 @@ const getItems = (req, res) => {
   res.json(items);
 };
 
-// palauta vain se objekti, jonka id vastaa pyydettyä, muuten 404
+ // palauta vain se objekti, jonka id vastaa pyydettyä, muuten 404
 const getItemById = (req, res) => {
   // console.log('requested item id', req.params.id);
   const itemFound = items.find((item) => item.id == req.params.id);
@@ -50,11 +50,13 @@ const putItem = (req, res) => {
   if (index === -1) {
     return res.sendStatus(404);
   }
-  // bad request
+  // bad request if name property is missing
   if (!req.body.name) {
     return res.status(400).json({error: 'item name missing'});
   }
+  // updates the name property of the item
   items[index].name = req.body.name;
+  // sends a response with the updated item
   res.json({updated_item: items[index]});
 };
 
