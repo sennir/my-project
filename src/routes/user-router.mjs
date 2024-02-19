@@ -1,10 +1,12 @@
+// user-router.mjs
+
 import express from "express";
 import {
     getUserById,
     getUsers,
     postUser,
-    postLogin,
-    putUser
+    putUser,
+    deleteUser
 } from '../controllers/user-controller.mjs';
 
 const userRouter = express.Router();
@@ -23,7 +25,7 @@ userRouter.route('/:id')
     //update user
     .put(putUser);
 
-// user login
-userRouter.post('/login', postLogin);
+// Delete user
+userRouter.delete('/:id', deleteUser);
 
 export default userRouter;
